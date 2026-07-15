@@ -80,7 +80,6 @@
     .career-filter { display: flex; flex-wrap: wrap; gap: 7px; }
     .filter-chip,
     .refresh-button,
-    .report-button,
     .word-button,
     .previous-select {
       min-height: 36px;
@@ -108,17 +107,11 @@
       font-weight: 700;
     }
     .refresh-button,
-    .report-button,
     .word-button {
       padding: 0 13px;
       border-radius: 7px;
       font-size: 12px;
       font-weight: 800;
-    }
-    .report-button {
-      border-color: var(--dark);
-      color: #fff;
-      background: var(--dark);
     }
     .word-button {
       border-color: var(--teal);
@@ -127,18 +120,15 @@
     }
     .filter-chip:hover,
     .refresh-button:hover,
-    .report-button:hover,
     .word-button:hover,
     .previous-select:hover { border-color: #9ca9aa; }
     .filter-chip:focus-visible,
     .refresh-button:focus-visible,
-    .report-button:focus-visible,
     .word-button:focus-visible,
     .previous-select:focus-visible {
       outline: 3px solid rgba(21, 124, 113, 0.2);
       outline-offset: 2px;
     }
-    .report-button:disabled,
     .word-button:disabled { cursor: not-allowed; opacity: 0.45; }
 
     .source-strip {
@@ -728,7 +718,6 @@
           <option value="들어본 적은 있으나 잘 모른다">낮은 인지</option>
           <option value="올해 처음 알았다">올해 최초 인지</option>
         </select>
-        <button class="report-button" id="reportButton" type="button" disabled>한장 보고서</button>
         <button class="word-button" id="wordButton" type="button" disabled>Word 다운로드</button>
         <button class="refresh-button" id="refreshButton" type="button">새로고침</button>
       </div>
@@ -871,7 +860,6 @@
     const accessPassword = document.getElementById("accessPassword");
     const accessButton = document.getElementById("accessButton");
     const accessError = document.getElementById("accessError");
-    const reportButton = document.getElementById("reportButton");
     const wordButton = document.getElementById("wordButton");
     const printReport = document.getElementById("printReport");
     let latestDashboardData = null;
@@ -912,7 +900,6 @@
       loadingPanel.classList.toggle("hidden", !isLoading || !dashboard.classList.contains("hidden"));
       dashboard.classList.toggle("is-loading", isLoading && !dashboard.classList.contains("hidden"));
       document.getElementById("refreshButton").disabled = isLoading;
-      reportButton.disabled = isLoading || !latestDashboardData;
       wordButton.disabled = isLoading || !latestDashboardData;
     }
 
@@ -1879,7 +1866,6 @@
       state.previous = event.target.value;
       loadDashboard();
     });
-    reportButton.addEventListener("click", printOnePageReport);
     wordButton.addEventListener("click", downloadEditableWordReport);
     document.getElementById("refreshButton").addEventListener("click", loadDashboard);
     accessForm.addEventListener("submit", async (event) => {
