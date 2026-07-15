@@ -398,7 +398,7 @@
     }
 
     @media print {
-      @page { size: A4 landscape; margin: 8mm; }
+      @page { size: A4 portrait; margin: 10mm; }
       html, body {
         width: auto;
         min-width: 0;
@@ -412,138 +412,162 @@
       body > .access-gate,
       body > .app { display: none !important; }
       .print-report {
-        display: block !important;
-        width: 281mm;
-        height: 194mm;
+        display: grid !important;
+        grid-template-rows: 25mm 43mm 29mm 72mm 88mm 8mm;
+        gap: 2.4mm;
+        width: 190mm;
+        height: 277mm;
         margin: 0;
         overflow: hidden;
         font-family: Pretendard, "Noto Sans KR", "Malgun Gothic", Arial, sans-serif;
         page-break-after: avoid;
         break-after: avoid-page;
       }
-      .report-header {
+      .brief-header {
         display: flex;
         align-items: flex-start;
         justify-content: space-between;
         gap: 8mm;
+        overflow: hidden;
         padding-bottom: 3mm;
-        border-bottom: 0.6mm solid #183946;
+        border-bottom: 0.7mm solid #183946;
       }
-      .report-kicker { margin: 0 0 1.5mm; color: #157c71; font-size: 7.5pt; font-weight: 800; }
-      .report-title { margin: 0; font-size: 19pt; font-weight: 850; line-height: 1.08; }
-      .report-subtitle { margin-top: 1.6mm; color: #607178; font-size: 7.5pt; line-height: 1.35; }
-      .report-head-meta { min-width: 62mm; color: #607178; font-size: 7pt; line-height: 1.5; text-align: right; }
-      .report-head-meta strong { color: #142a36; font-weight: 800; }
-      .report-kpis {
+      .brief-brand { margin: 0 0 1.2mm; color: #157c71; font-size: 7.2pt; font-weight: 850; }
+      .brief-title { margin: 0; font-size: 18pt; font-weight: 850; line-height: 1.08; }
+      .brief-subtitle { margin-top: 1.6mm; color: #68787e; font-size: 6.8pt; line-height: 1.35; }
+      .brief-meta { min-width: 53mm; color: #65767c; font-size: 6.5pt; line-height: 1.5; text-align: right; }
+      .brief-meta strong { color: #142a36; font-weight: 850; }
+
+      .brief-lead {
         display: grid;
-        grid-template-columns: repeat(6, minmax(0, 1fr));
-        gap: 2.5mm;
-        margin-top: 3mm;
+        grid-template-columns: 68mm minmax(0, 1fr);
+        gap: 5mm;
+        overflow: hidden;
+        padding: 4mm 5mm;
+        color: #fff;
+        background: #18333e;
       }
-      .report-kpi {
-        min-width: 0;
-        min-height: 19mm;
-        padding: 2.5mm 3mm;
-        border: 0.3mm solid #d9ddd8;
-        border-radius: 1.5mm;
-        background: #f8f8f5;
-      }
-      .report-kpi-label { color: #607178; font-size: 6.5pt; font-weight: 750; }
-      .report-kpi-value { margin-top: 1.5mm; font-size: 14pt; font-weight: 850; line-height: 1; }
-      .report-kpi-note { margin-top: 1.2mm; color: #7c898d; font-size: 5.8pt; line-height: 1.25; }
-      .report-grid {
+      .brief-lead-label { color: #82d6ca; font-size: 6.2pt; font-weight: 850; }
+      .brief-headline { margin: 2.5mm 0 0; font-size: 14.5pt; font-weight: 850; line-height: 1.28; word-break: keep-all; }
+      .brief-takeaways { display: grid; align-content: center; }
+      .brief-takeaway {
         display: grid;
-        grid-template-columns: 1.08fr 0.95fr 1.32fr;
-        gap: 3mm;
-        height: 137mm;
-        margin-top: 3mm;
-      }
-      .report-column { display: grid; align-content: start; gap: 3mm; min-width: 0; height: 100%; }
-      .report-column:nth-child(3) { grid-template-rows: minmax(0, 1fr); }
-      .report-panel {
-        min-width: 0;
-        padding: 3mm;
-        border: 0.3mm solid #d9ddd8;
-        border-radius: 1.5mm;
-        background: #fff;
-      }
-      .report-panel.accent { border-top: 1.2mm solid #157c71; }
-      .report-panel.dark { display: flex; flex-direction: column; color: #fff; border-color: #1b3039; background: #1b3039; }
-      .report-column:nth-child(3) .report-panel { height: 100%; }
-      .report-panel-title { margin: 0 0 2.2mm; font-size: 9pt; font-weight: 850; }
-      .report-panel-note { margin: -1mm 0 2mm; color: #748287; font-size: 6pt; line-height: 1.3; }
-      .report-panel.dark .report-panel-note { color: #c9d4d7; }
-      .report-insight-list { display: grid; gap: 2.4mm; }
-      .report-insight {
-        display: grid;
-        grid-template-columns: 7mm minmax(0, 1fr);
+        grid-template-columns: 6mm minmax(0, 1fr);
         gap: 2mm;
         align-items: start;
+        padding: 1.9mm 0;
+        border-bottom: 0.25mm solid rgba(255,255,255,0.18);
       }
-      .report-insight-index {
+      .brief-takeaway:last-child { border-bottom: 0; }
+      .brief-takeaway-index { color: #82d6ca; font-size: 6.5pt; font-weight: 900; }
+      .brief-takeaway strong { display: block; font-size: 7pt; line-height: 1.25; }
+      .brief-takeaway p { margin: 0.7mm 0 0; color: #d5dfe1; font-size: 5.8pt; line-height: 1.32; }
+
+      .brief-metrics {
         display: grid;
-        place-items: center;
-        width: 6mm;
-        height: 6mm;
-        border-radius: 50%;
-        color: #fff;
-        background: #376f96;
-        font-size: 6pt;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+        overflow: hidden;
+        border-top: 0.3mm solid #cfd6d2;
+        border-bottom: 0.3mm solid #cfd6d2;
+      }
+      .brief-metric { min-width: 0; padding: 2.2mm 4mm; border-right: 0.25mm solid #dfe3df; }
+      .brief-metric:nth-child(3n) { border-right: 0; }
+      .brief-metric:nth-child(-n+3) { border-bottom: 0.25mm solid #dfe3df; }
+      .brief-metric-label { color: #68787e; font-size: 5.8pt; font-weight: 750; }
+      .brief-metric-value { display: inline-block; margin-top: 0.8mm; font-size: 12pt; font-weight: 850; line-height: 1; }
+      .brief-metric-note { margin-left: 1.5mm; color: #839095; font-size: 5.3pt; }
+
+      .brief-analysis {
+        display: grid;
+        grid-template-columns: 1.08fr 0.92fr;
+        gap: 7mm;
+        overflow: hidden;
+      }
+      .brief-analysis-column { min-width: 0; overflow: hidden; }
+      .brief-section-title {
+        display: flex;
+        align-items: baseline;
+        gap: 2.5mm;
+        margin: 0 0 2.4mm;
+        padding-bottom: 1.8mm;
+        border-bottom: 0.45mm solid #183946;
+        font-size: 9.2pt;
         font-weight: 850;
       }
-      .report-insight.risk .report-insight-index { background: #bf4c39; }
-      .report-insight.good .report-insight-index { background: #157c71; }
-      .report-insight strong { display: block; font-size: 7.4pt; line-height: 1.25; }
-      .report-insight p { margin: 0.8mm 0 0; color: #617177; font-size: 6.3pt; line-height: 1.42; }
-      .report-grade-list,
-      .report-rank-list { display: grid; gap: 1.8mm; }
-      .report-grade-row { display: grid; grid-template-columns: 25mm minmax(0, 1fr) 10mm; gap: 2mm; align-items: center; }
-      .report-grade-label { font-size: 6.4pt; font-weight: 800; }
+      .brief-section-number { color: #157c71; font-size: 6.5pt; font-weight: 900; }
+      .brief-diagnosis-list { display: grid; gap: 1.7mm; }
+      .brief-diagnosis {
+        display: grid;
+        grid-template-columns: 5mm minmax(0, 1fr);
+        gap: 1.7mm;
+        align-items: start;
+      }
+      .brief-diagnosis-mark { width: 2.2mm; height: 2.2mm; margin-top: 1.2mm; border-radius: 50%; background: #376f96; }
+      .brief-diagnosis.risk .brief-diagnosis-mark { background: #bf4c39; }
+      .brief-diagnosis.good .brief-diagnosis-mark { background: #157c71; }
+      .brief-diagnosis strong { display: block; font-size: 6.7pt; line-height: 1.25; }
+      .brief-diagnosis p { margin: 0.6mm 0 0; color: #65757b; font-size: 5.6pt; line-height: 1.35; }
+      .brief-subsection-title { margin: 3mm 0 1.8mm; color: #40565f; font-size: 6.5pt; font-weight: 850; }
+      .report-grade-list { display: grid; gap: 1.3mm; }
+      .report-grade-row { display: grid; grid-template-columns: 25mm minmax(0, 1fr) 9mm; gap: 1.6mm; align-items: center; }
+      .report-grade-label { font-size: 5.6pt; font-weight: 800; }
       .report-grade-track,
-      .report-rank-track { height: 2.2mm; overflow: hidden; border-radius: 1.1mm; background: #e8e6de; }
+      .report-rank-track { height: 1.7mm; overflow: hidden; border-radius: 0.85mm; background: #e6e7e2; }
       .report-grade-fill,
       .report-rank-fill { height: 100%; border-radius: inherit; background: #376f96; }
       .report-grade-row:nth-child(2) .report-grade-fill { background: #dfa83d; }
       .report-grade-row:nth-child(3) .report-grade-fill { background: #157c71; }
       .report-grade-row:nth-child(4) .report-grade-fill { background: #7766a0; }
-      .report-grade-value { font-size: 6.2pt; font-weight: 800; text-align: right; }
-      .report-rank-row { display: grid; grid-template-columns: minmax(0, 1fr) 12mm; gap: 2mm; align-items: center; }
-      .report-rank-label { overflow: hidden; font-size: 6.4pt; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
-      .report-rank-value { font-size: 6.2pt; font-weight: 800; text-align: right; }
-      .report-rank-track { grid-column: 1 / -1; margin-top: -1mm; }
+      .report-grade-value { font-size: 5.5pt; font-weight: 850; text-align: right; }
+      .brief-driver-group + .brief-driver-group { margin-top: 4mm; padding-top: 3mm; border-top: 0.25mm solid #dfe3df; }
+      .brief-driver-title { margin: 0 0 2mm; font-size: 7pt; font-weight: 850; }
+      .report-rank-list { display: grid; gap: 2.2mm; }
+      .report-rank-row { display: grid; grid-template-columns: minmax(0, 1fr) 10mm; gap: 1.5mm; align-items: center; }
+      .report-rank-label { overflow: hidden; font-size: 5.8pt; line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; }
+      .report-rank-value { font-size: 5.6pt; font-weight: 850; text-align: right; }
+      .report-rank-track { grid-column: 1 / -1; margin-top: -0.7mm; }
       .report-rank-fill { background: #157c71; }
-      .report-actions { display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); flex: 1; gap: 2.2mm; }
-      .report-action {
+
+      .brief-actions {
+        overflow: hidden;
+        padding: 3.5mm 4mm 3mm;
+        border-top: 0.65mm solid #183946;
+        background: #f4f5f1;
+      }
+      .brief-actions-head { display: flex; align-items: baseline; justify-content: space-between; gap: 5mm; margin-bottom: 2mm; }
+      .brief-actions-title { margin: 0; font-size: 9.5pt; font-weight: 850; }
+      .brief-actions-title span { margin-right: 2.5mm; color: #157c71; font-size: 6.5pt; }
+      .brief-actions-caption { color: #748287; font-size: 5.5pt; }
+      .brief-action-table { border-top: 0.3mm solid #aeb9b6; }
+      .brief-action-row {
         display: grid;
-        grid-template-columns: 9mm minmax(0, 1fr);
-        gap: 2mm;
-        padding: 2.5mm;
-        border: 0.3mm solid rgba(255, 255, 255, 0.16);
-        border-radius: 1.5mm;
-        background: rgba(255, 255, 255, 0.05);
-        align-content: center;
+        grid-template-columns: 10mm 38mm minmax(0, 1fr) 39mm;
+        min-height: 19.5mm;
+        border-bottom: 0.25mm solid #cfd6d2;
       }
-      .report-action-priority { color: #83d7cc; font-size: 7pt; font-weight: 900; }
-      .report-action strong { display: block; font-size: 7.6pt; line-height: 1.25; }
-      .report-action p { margin: 0.9mm 0 0; color: #d4dcde; font-size: 6.2pt; line-height: 1.4; }
-      .report-action-meta { margin-top: 1.2mm; color: #9fb3b8; font-size: 5.7pt; line-height: 1.35; }
-      .report-sample-note {
-        padding: 2.5mm 3mm;
-        border-left: 1mm solid #dfa83d;
-        color: #5c686d;
-        background: #faf6ea;
-        font-size: 6.2pt;
-        line-height: 1.45;
-      }
-      .report-footer {
+      .brief-action-row > div { min-width: 0; padding: 2.4mm 2.5mm; border-right: 0.25mm solid #d6dcda; }
+      .brief-action-row > div:last-child { border-right: 0; }
+      .brief-action-priority { color: #157c71; font-size: 7pt; font-weight: 900; }
+      .brief-action-title { font-size: 6.7pt; font-weight: 850; line-height: 1.3; }
+      .brief-action-copy { color: #52666e; font-size: 5.5pt; line-height: 1.38; }
+      .brief-action-meta { color: #65777d; font-size: 5.3pt; line-height: 1.4; }
+      .brief-action-meta strong { display: block; color: #263f49; font-weight: 850; }
+      .brief-sample-note { margin-top: 2mm; color: #65767c; font-size: 5.3pt; line-height: 1.35; }
+      .brief-sample-note strong { color: #8b5f12; }
+
+      .brief-footer {
         display: flex;
         justify-content: space-between;
         gap: 5mm;
-        margin-top: 2.5mm;
+        overflow: hidden;
+        padding-top: 1.8mm;
+        border-top: 0.25mm solid #d8ddda;
         color: #7a888d;
-        font-size: 5.7pt;
-        line-height: 1.35;
+        font-size: 5.1pt;
+        line-height: 1.3;
       }
+      .brief-footer span:last-child { text-align: right; }
     }
   </style>
 </head>
@@ -1159,11 +1183,21 @@
       return actions.sort((left, right) => right.score - left.score).slice(0, 3);
     }
 
+    function buildReportHeadline(data) {
+      const report = data.report || {};
+      const objective = report.objectiveUnderstandingScore == null ? data.kpis.quizRate : report.objectiveUnderstandingScore;
+      if (objective != null && objective < 75) return "참여 확대에 앞서 핵심 시상 기준의 이해부터 보완해야 합니다.";
+      if (report.readinessAverage != null && report.readinessAverage < 60) return "관심을 실제 참여로 바꾸는 개인별 실행 지원이 필요합니다.";
+      if (data.kpis.motivationGap != null && data.kpis.motivationGap > 0.5) return "참여 의향은 있으나 달성 자신감을 높이는 지원이 필요합니다.";
+      return "참여 기반은 양호하며 실행군 유지와 전환 가능군 관리가 핵심입니다.";
+    }
+
     function renderOnePageReport(data) {
       const report = data.report || {};
       const insights = buildReportInsights(data);
       const actions = buildReportActions(data);
       const grades = report.grades || [];
+      const headline = buildReportHeadline(data);
       const filterLabel = [state.career, state.previous].filter((value) => value !== "전체").join(" · ") || "전체 응답";
       const responseCount = Number(data.meta.filteredResponses) || 0;
       const sampleNote = responseCount < 30
@@ -1179,58 +1213,63 @@
       ];
 
       printReport.innerHTML = `
-        <header class="report-header">
+        <header class="brief-header">
           <div>
-            <p class="report-kicker">2026 INCAR SUMMER FESTIVAL</p>
-            <h1 class="report-title">설계사 참여 진단 결과 · 한장 보고서</h1>
-            <div class="report-subtitle">공지 도달 → 기준 이해 → 참여 준비 → 실행 보완의 흐름으로 결과를 진단했습니다.</div>
+            <p class="brief-brand">2026 INCAR SUMMER FESTIVAL</p>
+            <h1 class="brief-title">설계사 참여 진단 결과</h1>
+            <div class="brief-subtitle">7월 1주차 설문 응답 분석 · 운영 개선 검토용</div>
           </div>
-          <div class="report-head-meta">
+          <div class="brief-meta">
             <div><strong>분석 범위</strong> ${escapeHtml(filterLabel)}</div>
             <div><strong>응답 기준</strong> ${numberText(responseCount, "명")}</div>
             <div><strong>최근 응답</strong> ${escapeHtml(formatReportDate(data.meta.latestResponseAt))}</div>
             <div><strong>보고서 생성</strong> ${escapeHtml(formatReportDate(data.generatedAt))}</div>
           </div>
         </header>
-        <section class="report-kpis">
-          ${kpis.map((item) => `<div class="report-kpi"><div class="report-kpi-label">${escapeHtml(item[0])}</div><div class="report-kpi-value">${escapeHtml(item[1])}</div><div class="report-kpi-note">${escapeHtml(item[2])}</div></div>`).join("")}
-        </section>
-        <section class="report-grid">
-          <div class="report-column">
-            <section class="report-panel accent">
-              <h2 class="report-panel-title">핵심 진단</h2>
-              <div class="report-insight-list">
-                ${insights.map((item, index) => `<div class="report-insight ${item.tone}"><div class="report-insight-index">${index + 1}</div><div><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.body)}</p></div></div>`).join("")}
-              </div>
-            </section>
-            <section class="report-panel">
-              <h2 class="report-panel-title">참여 진단 유형</h2>
-              <p class="report-panel-note">객관 이해도 75점·참여 준비도 60점 기준</p>
-              ${grades.length ? `<div class="report-grade-list">${grades.map((item) => `<div class="report-grade-row"><div class="report-grade-label">${escapeHtml(item.label)}</div><div class="report-grade-track"><div class="report-grade-fill" style="width:${clamp(item.pct, 0, 100)}%"></div></div><div class="report-grade-value">${item.count}명</div></div>`).join("")}</div>` : `<div class="report-panel-note">유형 분류에 필요한 응답을 기다리고 있습니다.</div>`}
-            </section>
+        <section class="brief-lead">
+          <div>
+            <div class="brief-lead-label">EXECUTIVE SUMMARY</div>
+            <h2 class="brief-headline">${escapeHtml(headline)}</h2>
           </div>
-          <div class="report-column">
-            <section class="report-panel">
-              <h2 class="report-panel-title">Top 3 참여 저해 요인</h2>
+          <div class="brief-takeaways">
+            ${insights.map((item, index) => `<div class="brief-takeaway"><div class="brief-takeaway-index">0${index + 1}</div><div><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.body)}</p></div></div>`).join("")}
+          </div>
+        </section>
+        <section class="brief-metrics">
+          ${kpis.map((item) => `<div class="brief-metric"><div class="brief-metric-label">${escapeHtml(item[0])}</div><span class="brief-metric-value">${escapeHtml(item[1])}</span><span class="brief-metric-note">${escapeHtml(item[2])}</span></div>`).join("")}
+        </section>
+        <section class="brief-analysis">
+          <div class="brief-analysis-column">
+            <h2 class="brief-section-title"><span class="brief-section-number">01</span>진단 결과</h2>
+            <div class="brief-diagnosis-list">
+              ${insights.map((item) => `<div class="brief-diagnosis ${item.tone}"><span class="brief-diagnosis-mark"></span><div><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.body)}</p></div></div>`).join("")}
+            </div>
+            <h3 class="brief-subsection-title">참여 진단 유형 · 객관 이해도 75점 / 참여 준비도 60점 기준</h3>
+            ${grades.length ? `<div class="report-grade-list">${grades.map((item) => `<div class="report-grade-row"><div class="report-grade-label">${escapeHtml(item.label)}</div><div class="report-grade-track"><div class="report-grade-fill" style="width:${clamp(item.pct, 0, 100)}%"></div></div><div class="report-grade-value">${item.count}명</div></div>`).join("")}</div>` : `<div class="brief-sample-note">유형 분류에 필요한 응답을 기다리고 있습니다.</div>`}
+          </div>
+          <div class="brief-analysis-column">
+            <h2 class="brief-section-title"><span class="brief-section-number">02</span>주요 원인</h2>
+            <div class="brief-driver-group">
+              <h3 class="brief-driver-title">참여 저해 요인 Top 3</h3>
               ${reportRankList(data.barriers)}
-            </section>
-            <section class="report-panel">
-              <h2 class="report-panel-title">Top 3 필요 사항</h2>
+            </div>
+            <div class="brief-driver-group">
+              <h3 class="brief-driver-title">참여 확대를 위해 필요한 사항 Top 3</h3>
               ${reportRankList(data.improvements)}
-            </section>
-            <div class="report-sample-note"><strong>해석 유의사항</strong><br>${escapeHtml(sampleNote)}</div>
-          </div>
-          <div class="report-column">
-            <section class="report-panel dark">
-              <h2 class="report-panel-title">우선 개선 과제</h2>
-              <p class="report-panel-note">현재 결과에서 실행 효과가 큰 순서로 제안합니다.</p>
-              <div class="report-actions">
-                ${actions.map((item, index) => `<div class="report-action"><div class="report-action-priority">P${index + 1}</div><div><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.execution)}</p><div class="report-action-meta">근거: ${escapeHtml(item.reason)} · ${escapeHtml(item.metric)}</div></div></div>`).join("")}
-              </div>
-            </section>
+            </div>
           </div>
         </section>
-        <footer class="report-footer">
+        <section class="brief-actions">
+          <div class="brief-actions-head">
+            <h2 class="brief-actions-title"><span>03</span>우선 개선과제</h2>
+            <div class="brief-actions-caption">현재 결과에서 실행 효과가 큰 순서로 제안</div>
+          </div>
+          <div class="brief-action-table">
+            ${actions.map((item, index) => `<div class="brief-action-row"><div class="brief-action-priority">P${index + 1}</div><div class="brief-action-title">${escapeHtml(item.title)}</div><div class="brief-action-copy">${escapeHtml(item.execution)}</div><div class="brief-action-meta"><strong>${escapeHtml(item.reason)}</strong>${escapeHtml(item.metric)}</div></div>`).join("")}
+          </div>
+          <div class="brief-sample-note"><strong>해석 유의사항</strong> ${escapeHtml(sampleNote)}</div>
+        </section>
+        <footer class="brief-footer">
           <span>분석 기준: 공지 확인률, 주관·객관 이해도, 참여 준비도(참여 단계 40%·의향 30%·달성 가능성 30%)</span>
           <span>개인 식별정보와 주관식 원문은 보고서에서 제외</span>
         </footer>`;
