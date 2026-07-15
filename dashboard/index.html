@@ -81,6 +81,7 @@
     .filter-chip,
     .refresh-button,
     .report-button,
+    .word-button,
     .previous-select {
       min-height: 36px;
       border: 1px solid #d5d1c6;
@@ -107,7 +108,8 @@
       font-weight: 700;
     }
     .refresh-button,
-    .report-button {
+    .report-button,
+    .word-button {
       padding: 0 13px;
       border-radius: 7px;
       font-size: 12px;
@@ -118,18 +120,26 @@
       color: #fff;
       background: var(--dark);
     }
+    .word-button {
+      border-color: var(--teal);
+      color: #0c655d;
+      background: #fff;
+    }
     .filter-chip:hover,
     .refresh-button:hover,
     .report-button:hover,
+    .word-button:hover,
     .previous-select:hover { border-color: #9ca9aa; }
     .filter-chip:focus-visible,
     .refresh-button:focus-visible,
     .report-button:focus-visible,
+    .word-button:focus-visible,
     .previous-select:focus-visible {
       outline: 3px solid rgba(21, 124, 113, 0.2);
       outline-offset: 2px;
     }
-    .report-button:disabled { cursor: not-allowed; opacity: 0.45; }
+    .report-button:disabled,
+    .word-button:disabled { cursor: not-allowed; opacity: 0.45; }
 
     .source-strip {
       display: flex;
@@ -719,6 +729,7 @@
           <option value="올해 처음 알았다">올해 최초 인지</option>
         </select>
         <button class="report-button" id="reportButton" type="button" disabled>한장 보고서</button>
+        <button class="word-button" id="wordButton" type="button" disabled>Word 다운로드</button>
         <button class="refresh-button" id="refreshButton" type="button">새로고침</button>
       </div>
     </header>
@@ -816,6 +827,7 @@
 
   <section class="print-report" id="printReport" aria-hidden="true"></section>
 
+  <script src="../assets/docx.iife.js"></script>
   <script>
     const WEBAPP_ENDPOINT = "https://script.google.com/macros/s/AKfycbzHmePbcE8qIOEsoB02PukZqqbGJhwixuopoiBDF370TwDnBDC-9YBQvfI_DGOmxLKi/exec";
     const ACCESS_STORAGE_KEY = "isf-dashboard-access";
@@ -860,6 +872,7 @@
     const accessButton = document.getElementById("accessButton");
     const accessError = document.getElementById("accessError");
     const reportButton = document.getElementById("reportButton");
+    const wordButton = document.getElementById("wordButton");
     const printReport = document.getElementById("printReport");
     let latestDashboardData = null;
     let dashboardPassword = "";
@@ -900,6 +913,7 @@
       dashboard.classList.toggle("is-loading", isLoading && !dashboard.classList.contains("hidden"));
       document.getElementById("refreshButton").disabled = isLoading;
       reportButton.disabled = isLoading || !latestDashboardData;
+      wordButton.disabled = isLoading || !latestDashboardData;
     }
 
     function showError(error) {
@@ -1518,6 +1532,314 @@
       window.requestAnimationFrame(() => window.print());
     }
 
+    async function downloadEditableWordReport() {
+      if (!latestDashboardData) return;
+      if (!window.docx) {
+        window.alert("Word 문서 생성 모듈을 불러오지 못했습니다. 페이지를 새로고침해 주세요.");
+        return;
+      }
+
+      const previousText = wordButton.textContent;
+      wordButton.disabled = true;
+      wordButton.textContent = "Word 생성 중";
+      try {
+        const data = latestDashboardData;
+        const responseCount = Number(data.meta.filteredResponses) || 0;
+        const filterLabel = [state.career, state.previous].filter((value) => value !== "전체").join(" · ") || "전체 응답";
+        const preliminary = responseCount < 30;
+        const {
+          AlignmentType, BorderStyle, Document, Footer, Packer, PageOrientation,
+          Paragraph, ShadingType, Table, TableCell, TableLayoutType, TableRow,
+          TextRun, VerticalAlign, WidthType,
+        } = window.docx;
+
+        const COLORS = {
+          ink: "142A36", teal: "157C71", tealLight: "E7F2EF", navy: "183946",
+          muted: "65767C", line: "D5DDDA", fill: "F4F5F1", warm: "F6F3EC",
+          gold: "9A6917", goldLine: "C98724", risk: "B84435", white: "FFFFFF",
+        };
+        const FONT = "Malgun Gothic";
+        const CONTENT_WIDTH = 10206;
+        const thinBorder = { style: BorderStyle.SINGLE, size: 4, color: COLORS.line };
+        const noBorder = { style: BorderStyle.NIL, size: 0, color: COLORS.white };
+        const allBorders = { top: thinBorder, bottom: thinBorder, left: thinBorder, right: thinBorder, insideHorizontal: thinBorder, insideVertical: thinBorder };
+        const quietBorders = { top: thinBorder, bottom: thinBorder, left: noBorder, right: noBorder, insideHorizontal: thinBorder, insideVertical: thinBorder };
+
+        const text = (value, options = {}) => new TextRun({
+          text: String(value == null ? "" : value),
+          font: FONT,
+          size: options.size == null ? 18 : options.size,
+          bold: Boolean(options.bold),
+          color: options.color || COLORS.ink,
+          italics: Boolean(options.italics),
+          break: options.break,
+        });
+        const paragraph = (content, options = {}) => {
+          const children = Array.isArray(content)
+            ? content
+            : [text(content, options.run || {})];
+          return new Paragraph({
+            children,
+            style: options.style,
+            alignment: options.alignment,
+            keepNext: Boolean(options.keepNext),
+            keepLines: options.keepLines !== false,
+            spacing: {
+              before: options.before == null ? 0 : options.before,
+              after: options.after == null ? 70 : options.after,
+              line: options.line == null ? 250 : options.line,
+              lineRule: "auto",
+            },
+            border: options.border,
+            shading: options.fill ? { type: ShadingType.CLEAR, fill: options.fill, color: "auto" } : undefined,
+          });
+        };
+        const cell = (children, width, options = {}) => new TableCell({
+          children: Array.isArray(children) ? children : [children],
+          width: { size: width, type: WidthType.DXA },
+          verticalAlign: options.verticalAlign || VerticalAlign.CENTER,
+          shading: options.fill ? { type: ShadingType.CLEAR, fill: options.fill, color: "auto" } : undefined,
+          margins: options.margins || { top: 80, bottom: 80, left: 110, right: 110 },
+          borders: options.borders,
+        });
+        const table = (rows, widths, options = {}) => new Table({
+          rows,
+          width: { size: CONTENT_WIDTH, type: WidthType.DXA },
+          columnWidths: widths,
+          layout: TableLayoutType.FIXED,
+          borders: options.borders || allBorders,
+        });
+        const sectionHeading = (number, title) => paragraph([
+          text(number, { size: 15, bold: true, color: COLORS.teal }),
+          text(`  ${title}`, { size: 22, bold: true, color: COLORS.ink }),
+        ], {
+          keepNext: true,
+          before: 100,
+          after: 70,
+          border: { bottom: { style: BorderStyle.SINGLE, size: 8, color: COLORS.navy, space: 5 } },
+        });
+        const metadata = () => paragraph([
+          text("분석 범위  ", { size: 15, bold: true }),
+          text(`${filterLabel}    `, { size: 15, color: COLORS.muted }),
+          text("응답 기준  ", { size: 15, bold: true }),
+          text(`${responseCount}명    `, { size: 15, color: COLORS.muted }),
+          text("최근 응답  ", { size: 15, bold: true }),
+          text(formatReportDate(data.meta.latestResponseAt), { size: 15, color: COLORS.muted }),
+        ], { after: 90, border: { bottom: { style: BorderStyle.SINGLE, size: 10, color: COLORS.navy, space: 7 } } });
+        const titleBlock = (titleValue, subtitle) => [
+          paragraph("2026 INCAR SUMMER FESTIVAL", { after: 35, run: { size: 15, bold: true, color: COLORS.teal } }),
+          paragraph(titleValue, { style: "ReportTitle", after: 35 }),
+          paragraph(subtitle, { after: 55, run: { size: 16, color: COLORS.muted } }),
+          metadata(),
+        ];
+        const metricCell = (label, value, note) => cell([
+          paragraph(label, { after: 25, run: { size: 14, bold: true, color: COLORS.muted } }),
+          paragraph([text(value, { size: 25, bold: true }), text(`  ${note}`, { size: 13, color: COLORS.muted })], { after: 0 }),
+        ], 3402, { fill: COLORS.white });
+        const rowsFromItems = (items, widths, mapper, options = {}) => items.map((item, index) => new TableRow({
+          cantSplit: true,
+          children: mapper(item, index).map((definition, cellIndex) => cell(
+            definition.children,
+            widths[cellIndex],
+            { fill: definition.fill, borders: definition.borders, verticalAlign: definition.verticalAlign },
+          )),
+        }));
+
+        const children = [];
+        if (preliminary) {
+          const minimumSample = 30;
+          const remaining = Math.max(0, minimumSample - responseCount);
+          const topNotice = reportTopItems(data.notice, 1)[0];
+          const topParticipation = reportTopItems(data.participation, 1)[0];
+          const topCareer = reportTopItems(data.profile && data.profile.careers, 1)[0];
+          const objective = data.report && data.report.objectiveUnderstandingScore != null
+            ? data.report.objectiveUnderstandingScore
+            : data.kpis.quizRate;
+          const readiness = [
+            ["응답 누적", `${responseCount} / ${minimumSample}`, `${remaining}건 추가 필요`],
+            ["전체 방향성", "판단 보류", "N=30부터 비율·순위 해석"],
+            ["세부 집단 비교", "판단 보류", "집단별 N=30 이상 권장"],
+            ["개선과제 확정", "판단 보류", "현재는 수집 운영만 제안"],
+          ];
+          const observations = [
+            ["공지 확인 사례", topNotice ? topNotice.label : "응답 없음", `현재 ${responseCount}건에서 관찰된 응답이며 전체 설계사로 일반화하지 않습니다.`],
+            ["기준 이해 사례", objective == null ? "산출 대기" : `${objective}점`, `객관 문항 기준 · 분석 사례 ${responseCount}건`],
+            ["참여 상태 사례", topParticipation ? (statusShortLabels[topParticipation.label] || topParticipation.label) : "응답 없음", `현재 최다 관찰 상태 · ${topParticipation ? topParticipation.count : 0}건`],
+            ["응답 구성", topCareer ? `${topCareer.label} ${topCareer.count}건` : "산출 대기", "경력·전년도 참여 여부의 편중 여부를 응답 누적 후 점검합니다."],
+          ];
+          const actions = [
+            ["P1", `응답 ${remaining}건 추가 확보`, "방향성 해석 최소 운영기준 N=30까지 응답을 우선 확보하고 응답률과 수집 속도를 관리합니다."],
+            ["P2", "응답 구성 편중 점검", "경력 구간과 전년도 참여 여부별 응답 수를 함께 확인해 특정 집단의 응답이 전체 결과처럼 보이는 오류를 방지합니다."],
+            ["P3", "최소 기준 도달 후 분석 전환", "N=30 도달 시 공지 도달·객관 이해·참여 준비·저해 요인을 다시 계산하고 개선과제 우선순위를 제시합니다."],
+          ];
+
+          children.push(...titleBlock("설문 분석 준비도 보고서", "7월 1주차 설문 예비 집계 · 통계 해석 전 점검"));
+          children.push(paragraph("PRELIMINARY · 분석 전", { after: 35, run: { size: 14, bold: true, color: COLORS.gold } }));
+          children.push(paragraph("아직 결과를 해석할 단계가 아닙니다.", {
+            after: 45,
+            fill: COLORS.warm,
+            border: { left: { style: BorderStyle.SINGLE, size: 18, color: COLORS.goldLine, space: 8 } },
+            run: { size: 27, bold: true },
+          }));
+          children.push(paragraph(`응답 ${responseCount}건으로는 비율·순위·개선과제를 조직 전체의 결과처럼 제시할 수 없습니다. 현재는 응답 확보와 표본 구성 확인이 우선입니다.`, {
+            after: 90,
+            fill: COLORS.warm,
+            border: { left: { style: BorderStyle.SINGLE, size: 18, color: COLORS.goldLine, space: 8 } },
+            run: { size: 17, color: COLORS.muted },
+          }));
+          children.push(sectionHeading("01", "분석 준비도"));
+          children.push(table([
+            new TableRow({ cantSplit: true, children: readiness.map((item) => cell([
+              paragraph(item[0], { after: 20, run: { size: 13, bold: true, color: COLORS.muted } }),
+              paragraph(item[1], { after: 20, run: { size: 18, bold: true, color: item[1] === "판단 보류" ? COLORS.gold : COLORS.ink } }),
+              paragraph(item[2], { after: 0, run: { size: 12, color: COLORS.muted } }),
+            ], 2551, { fill: COLORS.fill })) }),
+          ], [2551, 2551, 2551, 2553]));
+          children.push(sectionHeading("02", "현재까지의 관찰"));
+          children.push(table(rowsFromItems(observations, [1900, 2600, 5706], (item) => [
+            { children: [paragraph(item[0], { after: 0, run: { size: 14, bold: true, color: COLORS.muted } })], fill: COLORS.fill },
+            { children: [paragraph(item[1], { after: 0, run: { size: 17, bold: true } })] },
+            { children: [paragraph(item[2], { after: 0, run: { size: 13, color: COLORS.muted } })] },
+          ]), [1900, 2600, 5706], { borders: quietBorders }));
+          children.push(sectionHeading("03", "지금 해야 할 일"));
+          children.push(table(rowsFromItems(actions, [720, 2700, 6786], (item) => [
+            { children: [paragraph(item[0], { after: 0, alignment: AlignmentType.CENTER, run: { size: 15, bold: true, color: COLORS.teal } })], fill: COLORS.fill },
+            { children: [paragraph(item[1], { after: 0, run: { size: 15, bold: true } })], fill: COLORS.fill },
+            { children: [paragraph(item[2], { after: 0, run: { size: 13, color: COLORS.muted } })], fill: COLORS.fill },
+          ]), [720, 2700, 6786], { borders: quietBorders }));
+          children.push(paragraph([
+            text("해석 원칙  ", { size: 13, bold: true, color: COLORS.gold }),
+            text("N=30은 방향성 확인을 위한 최소 운영기준입니다. 대표성이나 통계적 유의성 판단에는 전체 모집단 규모와 응답 구성 검토가 별도로 필요합니다.", { size: 13, color: COLORS.muted }),
+          ], { before: 70, after: 0 }));
+        } else {
+          const report = data.report || {};
+          const insights = buildReportInsights(data);
+          const actions = buildReportActions(data);
+          const objective = report.objectiveUnderstandingScore == null ? data.kpis.quizRate : report.objectiveUnderstandingScore;
+          const diagnosticRows = [
+            ["공지 도달", numberText(data.kpis.noticeConfirmedRate, "%"), "관리 기준 85%", data.kpis.noticeConfirmedRate >= 85 ? "양호" : (data.kpis.noticeConfirmedRate >= 70 ? "점검" : "보완")],
+            ["객관 이해", numberText(objective, "점"), "관리 기준 75점", objective >= 75 ? "양호" : (objective >= 60 ? "점검" : "보완")],
+            ["참여 준비", numberText(report.readinessAverage, "점"), "관리 기준 60점", report.readinessAverage >= 60 ? "양호" : (report.readinessAverage >= 50 ? "점검" : "보완")],
+            ["실행 격차", numberText(data.kpis.motivationGap, "점"), "의향-가능성 0.5점 이하", data.kpis.motivationGap <= 0.5 ? "양호" : "보완"],
+          ];
+          const kpis = [
+            ["응답 수", numberText(responseCount, "명"), filterLabel],
+            ["공지 확인률", numberText(data.kpis.noticeConfirmedRate, "%"), "자세히·대략 확인"],
+            ["객관 이해도", numberText(objective, "점"), "기준 75점"],
+            ["참여 준비도", numberText(report.readinessAverage, "점"), "기준 60점"],
+            ["참여(예정)", numberText(data.kpis.participationRate, "%"), "참여 중·목표 미정"],
+            ["의향 / 가능성", `${numberText(data.kpis.motivationAverage)} / ${numberText(data.kpis.feasibilityAverage)}`, "각 5점 만점"],
+          ];
+          const topBarriers = reportTopItems(data.barriers);
+          const topImprovements = reportTopItems(data.improvements);
+
+          children.push(...titleBlock("설계사 참여 진단 결과", "7월 1주차 설문 응답 분석 · 운영 개선 검토용"));
+          children.push(paragraph("EXECUTIVE SUMMARY", { after: 30, run: { size: 13, bold: true, color: COLORS.teal } }));
+          children.push(paragraph(buildReportHeadline(data), { after: 55, fill: COLORS.navy, run: { size: 25, bold: true, color: COLORS.white } }));
+          insights.forEach((item, index) => children.push(paragraph([
+            text(`0${index + 1}  `, { size: 13, bold: true, color: COLORS.teal }),
+            text(`${item.title}  `, { size: 15, bold: true }),
+            text(item.body, { size: 13, color: COLORS.muted }),
+          ], { after: 35 })));
+          children.push(table([
+            new TableRow({ cantSplit: true, children: kpis.slice(0, 3).map((item) => metricCell(...item)) }),
+            new TableRow({ cantSplit: true, children: kpis.slice(3, 6).map((item) => metricCell(...item)) }),
+          ], [3402, 3402, 3402]));
+          children.push(sectionHeading("01", "진단 결과"));
+          children.push(table(rowsFromItems(diagnosticRows, [1900, 1500, 5000, 1806], (item) => [
+            { children: [paragraph(item[0], { after: 0, run: { size: 14, bold: true } })] },
+            { children: [paragraph(item[1], { after: 0, alignment: AlignmentType.CENTER, run: { size: 17, bold: true } })] },
+            { children: [paragraph(item[2], { after: 0, run: { size: 13, color: COLORS.muted } })] },
+            { children: [paragraph(item[3], { after: 0, alignment: AlignmentType.CENTER, run: { size: 14, bold: true, color: item[3] === "양호" ? COLORS.teal : (item[3] === "점검" ? COLORS.gold : COLORS.risk) } })] },
+          ]), [1900, 1500, 5000, 1806], { borders: quietBorders }));
+          children.push(sectionHeading("02", "주요 원인"));
+          children.push(table([
+            new TableRow({ cantSplit: true, children: [
+              cell([
+                paragraph("참여 저해 요인 Top 3", { after: 45, run: { size: 15, bold: true } }),
+                ...topBarriers.map((item, index) => paragraph(`${index + 1}. ${item.label}  ${item.pct}%`, { after: 35, run: { size: 13 } })),
+              ], 5103, { fill: COLORS.fill }),
+              cell([
+                paragraph("참여 확대 필요 사항 Top 3", { after: 45, run: { size: 15, bold: true } }),
+                ...topImprovements.map((item, index) => paragraph(`${index + 1}. ${item.label}  ${item.pct}%`, { after: 35, run: { size: 13 } })),
+              ], 5103, { fill: COLORS.fill }),
+            ] }),
+          ], [5103, 5103]));
+          children.push(sectionHeading("03", "우선 개선과제"));
+          children.push(table(rowsFromItems(actions, [720, 2300, 4900, 2286], (item, index) => [
+            { children: [paragraph(`P${index + 1}`, { after: 0, alignment: AlignmentType.CENTER, run: { size: 15, bold: true, color: COLORS.teal } })], fill: COLORS.fill },
+            { children: [paragraph(item.title, { after: 0, run: { size: 14, bold: true } })], fill: COLORS.fill },
+            { children: [paragraph(item.execution, { after: 0, run: { size: 12, color: COLORS.muted } })], fill: COLORS.fill },
+            { children: [paragraph(item.reason, { after: 20, run: { size: 12, bold: true } }), paragraph(item.metric, { after: 0, run: { size: 12, color: COLORS.muted } })], fill: COLORS.fill },
+          ]), [720, 2300, 4900, 2286], { borders: quietBorders }));
+          children.push(paragraph([
+            text("해석 유의사항  ", { size: 12, bold: true, color: COLORS.gold }),
+            text(`현재 표본은 ${responseCount}명입니다. 세부 집단 비교 시에는 비율과 함께 집단별 응답 수를 확인해야 합니다.`, { size: 12, color: COLORS.muted }),
+          ], { before: 60, after: 0 }));
+        }
+
+        const wordDocument = new Document({
+          creator: "INCAR",
+          title: preliminary ? "2026 ISF 설문 분석 준비도 보고서" : "2026 ISF 설문 분석 결과 보고서",
+          description: "2026 INCAR SUMMER FESTIVAL 설문 응답 분석",
+          styles: {
+            default: {
+              document: {
+                run: { font: FONT, size: 18, color: COLORS.ink },
+                paragraph: { spacing: { after: 70, line: 250, lineRule: "auto" } },
+              },
+            },
+            paragraphStyles: [
+              {
+                id: "ReportTitle",
+                name: "Report Title",
+                basedOn: "Normal",
+                next: "Normal",
+                quickFormat: true,
+                run: { font: FONT, size: 38, bold: true, color: COLORS.ink },
+                paragraph: { spacing: { before: 0, after: 40, line: 240, lineRule: "auto" } },
+              },
+            ],
+          },
+          sections: [{
+            properties: {
+              page: {
+                size: { width: 11906, height: 16838, orientation: PageOrientation.PORTRAIT },
+                margin: { top: 680, right: 850, bottom: 680, left: 850, header: 300, footer: 300 },
+              },
+            },
+            footers: {
+              default: new Footer({
+                children: [paragraph("2026 INCAR SUMMER FESTIVAL · 내부 검토용", { alignment: AlignmentType.RIGHT, after: 0, run: { size: 11, color: COLORS.muted } })],
+              }),
+            },
+            children,
+          }],
+        });
+
+        const blob = await Packer.toBlob(wordDocument);
+        const date = data.generatedAt ? new Date(data.generatedAt) : new Date();
+        const stamp = Number.isNaN(date.getTime())
+          ? ""
+          : `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, "0")}${String(date.getDate()).padStart(2, "0")}`;
+        const filename = `2026_ISF_${preliminary ? "설문_분석_준비도" : "설문_분석_결과"}_${stamp || "보고서"}.docx`;
+        const url = URL.createObjectURL(blob);
+        const anchor = window.document.createElement("a");
+        anchor.href = url;
+        anchor.download = filename;
+        window.document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      } catch (error) {
+        console.error("Word report generation failed", error);
+        window.alert("Word 보고서를 생성하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+      } finally {
+        wordButton.disabled = !latestDashboardData;
+        wordButton.textContent = previousText;
+      }
+    }
+
     function renderDashboard(data) {
       latestDashboardData = data;
       setLoading(false);
@@ -1558,6 +1880,7 @@
       loadDashboard();
     });
     reportButton.addEventListener("click", printOnePageReport);
+    wordButton.addEventListener("click", downloadEditableWordReport);
     document.getElementById("refreshButton").addEventListener("click", loadDashboard);
     accessForm.addEventListener("submit", async (event) => {
       event.preventDefault();
